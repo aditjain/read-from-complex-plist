@@ -20,36 +20,6 @@ var totalFail:Int = 0
 var totalSkipped:Int = 0
 var totalTestCase:Int = 0
 var dirPath:String = ""
-
-class readFromTestSummary{
-
-    //convert dict data to array from plist
-    func convertArrayToDictFromPlist(keyName:String) {
-        
-        dictArray = [NSDictionary]()
-        
-        for (key, value) in myDict!{
-            
-            //print(key)
-            if(key.isEqual(keyName)){
-                
-                array = myDict![keyName] as? NSArray
-                
-                for i in 0..<array!.count{
-                    
-                    myDict = array![i] as! NSDictionary as NSDictionary!
-                    dictArray.append(myDict!)
-                }
-                
-                //print(key)
-                break
-                
-            }
-            
-        }
-        
-    }//func ends here
-    
     
     //get category count from plist
     func getCategoryCount() -> Int{
@@ -75,11 +45,8 @@ class readFromTestSummary{
             
             convertArrayToDictFromPlist(key)
         }
-        
-        
         print(array!.count)
         return array!.count
-        
     }//func ends here
     
     
@@ -90,24 +57,19 @@ class readFromTestSummary{
         myDict = self.getTestSummaryPlistData()
         
         for i in 0..<4{
-            
+        
             var key:String = "default"
             
             if(i==0){
-                
                 key="TestableSummaries"
             }
             if(i==1){
-                
                 key="Tests"
             }
             if(i>1){
-                
                 key="Subtests"
             }
-            
             convertArrayToDictFromPlist(key)
-            
         }
         
         for i in 0..<dictArray.count{
@@ -115,20 +77,14 @@ class readFromTestSummary{
             for (key, value) in dictArray[i]{
                 
                 if(key.isEqual("TestName")){
-                    
+                
                     categoryName.append(value as! String)
                     print(value)
-                    
                 }
-                
             }
-            
         }
-        
         // print(array!.count)
-        
         return categoryName
-        
     }//func ends here
     
     
@@ -151,9 +107,7 @@ class readFromTestSummary{
                 
                 key="Subtests"
             }
-            
             convertArrayToDictFromPlist(key)
-            
         }
         
         print("******* \(dictArray.count)")
@@ -177,23 +131,16 @@ class readFromTestSummary{
                         
                         for (key, value) in myDict!{
                             
-                            
                             if(key.isEqual("TestName")){
-                                
                                 
                                 dict[testCat]?.updateValue( myDict!["TestStatus"]! as! String,forKey: myDict!["TestName"]! as! String)
                                 
                             }
-                            
                         }
-                        
                     }
-                    
                     break
                 }
-                
             }
-          
         }
         return dict
     }//func ends here
@@ -226,8 +173,7 @@ class readFromTestSummary{
         
         categoryName = getCategoryName()
         testStatusDic = getTestCaseNameAndStatus()
-        
-        
+    
         let file = "TestSummary.txt" //this is the file. we will write to and read from it
         
         let dir = NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.DocumentDirectory, NSSearchPathDomainMask.AllDomainsMask, true).first! //{
@@ -243,7 +189,6 @@ class readFromTestSummary{
             try "total test category is \(testStatusDic.count)".writeToURL(path, atomically: false, encoding: NSUTF8StringEncoding)
         }
         catch {/* error handling here */}
-        
         
         for (outerKey, innerDict) in testStatusDic {
             
@@ -276,13 +221,11 @@ class readFromTestSummary{
                 }
             }
             
-            
             do {
                 //try "total passed: \(totalPass)".writeToURL(path, atomically: false, encoding: NSUTF8StringEncoding)
                 appendToFile("\ntotal passed: \(totalPass)", filePath: filePath)
             }
             catch {/* error handling here */}
-            
             
             do {
                 //try "total Failed: \(totalFail)".writeToURL(path, atomically: false, encoding: NSUTF8StringEncoding)
@@ -290,7 +233,6 @@ class readFromTestSummary{
                 appendToFile("\ntotal Failed: \(totalFail)", filePath: filePath)
             }
             catch {/* error handling here */}
-            
             
             do {
                 //try "total Skipped: \(totalSkipped)".writeToURL(path, atomically: false, encoding: NSUTF8StringEncoding)
@@ -305,7 +247,6 @@ class readFromTestSummary{
             }
             catch {/* error handling here */}
         }
-        
         return dirPath
     }//func ends here
     
@@ -329,6 +270,31 @@ class readFromTestSummary{
         
     }//func ends here
     
+    class readFromTestSummary{
+
+    //convert dict data to array from plist
+    func convertArrayToDictFromPlist(keyName:String) {
+        
+        dictArray = [NSDictionary]()
+        
+        for (key, value) in myDict!{
+            
+            //print(key)
+            if(key.isEqual(keyName)){
+                
+                array = myDict![keyName] as? NSArray
+                
+                for i in 0..<array!.count{
+                    
+                    myDict = array![i] as! NSDictionary as NSDictionary!
+                    dictArray.append(myDict!)
+                }
+                //print(key)
+                break
+            }
+        }
+    }//func ends here
+    
     //search folder
     func searchFolder(folderPath:String, keyWord:String) ->String{
         
@@ -337,27 +303,20 @@ class readFromTestSummary{
         let enumerator:NSDirectoryEnumerator = fileManager.enumeratorAtPath(folderPath)!
         
         while let searchElement = enumerator.nextObject() as? String {
-            
-            
+        
             if searchElement.hasPrefix(keyWord) {
-                
-                
+    
                 element = searchElement
                 break
-                
             }
             
             if searchElement.hasSuffix(keyWord) {
-                
-                
+            
                 element = searchElement
                 break
-                
             }
         }
-        
         return element
-        
     }//func ends here
 
 }

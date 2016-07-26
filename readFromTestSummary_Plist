@@ -2,29 +2,53 @@
 
 import Cocoa
 
-
 var array:NSArray?
-var myDict: NSDictionary?
+var plistDict: NSDictionary? //this will get the plist root dictionary
+var dict = [Int:[String:String]]() //It will create 2d dictionary
+var testStatusDic = [Int:[String:String]]() //this will create dictionary according to test cases
 var categoryName = [String]()
 var testcaseName = Array<Array<String>>()
 var testcaseStatus = Array<Array<String>>()
-var dictArray = [NSDictionary]()
+var dictArray = [NSDictionary]() // create dictionary array to add dictionaries
 var key:String = "default"
-var dictionaries  = [String: String]()
-var dict = [Int:[String:String]]()
-
-var testStatusDic = [Int:[String:String]]()
 
 var totalPass:Int = 0
 var totalFail:Int = 0
 var totalSkipped:Int = 0
 var totalTestCase:Int = 0
 var dirPath:String = ""
+
+class readFromTestSummary{
+
+    //convert dict data to array from plist
+    func convertArrayToDictFromPlist(keyName:String) {
+        
+        dictArray = [NSDictionary]()
+        
+        for (key, value) in plistDict!{
+        
+            //print(key)
+            if(key.isEqual(keyName)){
+            
+                array = plistDict![keyName] as? NSArray
+                
+                for i in 0..<array!.count{
+                    
+                    plistDict = array![i] as! NSDictionary as NSDictionary!
+                    dictArray.append(plistDict!)
+                }
+                //print(key)
+                break
+            }
+        }
+        
+    }//func ends here
+    
     
     //get category count from plist
     func getCategoryCount() -> Int{
         
-        myDict = self.getTestSummaryPlistData()
+        plistDict = self.getTestSummaryPlistData()
         
         for i in 0..<4 {
             
@@ -45,28 +69,31 @@ var dirPath:String = ""
             
             convertArrayToDictFromPlist(key)
         }
+        
         print(array!.count)
         return array!.count
     }//func ends here
     
     
-    
     //get category name
     func getCategoryName() -> Array<String>{
         
-        myDict = self.getTestSummaryPlistData()
+        plistDict = self.getTestSummaryPlistData()
         
         for i in 0..<4{
-        
+            
             var key:String = "default"
             
             if(i==0){
+                
                 key="TestableSummaries"
             }
             if(i==1){
+                
                 key="Tests"
             }
             if(i>1){
+                
                 key="Subtests"
             }
             convertArrayToDictFromPlist(key)
@@ -77,7 +104,7 @@ var dirPath:String = ""
             for (key, value) in dictArray[i]{
                 
                 if(key.isEqual("TestName")){
-                
+                    
                     categoryName.append(value as! String)
                     print(value)
                 }
@@ -91,7 +118,7 @@ var dirPath:String = ""
     //get test summary
     func getTestCaseNameAndStatus() -> [Int:[String:String]]{
         
-        myDict = self.getTestSummaryPlistData()
+        plistDict = self.getTestSummaryPlistData()
         
         for i in 0..<4 {
             
@@ -107,44 +134,43 @@ var dirPath:String = ""
                 
                 key="Subtests"
             }
+            
             convertArrayToDictFromPlist(key)
         }
-        
-        print("******* \(dictArray.count)")
         
         for testCat in 0..<dictArray.count{
             
             dict.updateValue([:], forKey: testCat)
-            myDict = dictArray[testCat] as NSDictionary!
+            plistDict = dictArray[testCat] as NSDictionary!
             
-            for (key, _) in myDict!{
+            for (key, _) in plistDict!{
                 
                 print(key)
                 
                 if(key.isEqual("Subtests")){
                     
-                    array = myDict!["Subtests"] as? NSArray
+                    array = plistDict!["Subtests"] as? NSArray
                     
                     for i in 0..<array!.count{
                         
-                        myDict = array![i] as! NSDictionary
+                        plistDict = array![i] as! NSDictionary
                         
-                        for (key, value) in myDict!{
-                            
+                        for (key, value) in plistDict!{
+            
                             if(key.isEqual("TestName")){
                                 
-                                dict[testCat]?.updateValue( myDict!["TestStatus"]! as! String,forKey: myDict!["TestName"]! as! String)
+                                dict[testCat]?.updateValue( plistDict!["TestStatus"]! as! String,forKey: plistDict!["TestName"]! as! String)
                                 
                             }
                         }
                     }
-                    break
+                    break                    
                 }
             }
         }
+        
         return dict
-    }//func ends here
-    
+    }
     
     //append to file
     func appendToFile(text:String,filePath:String)  {
@@ -173,14 +199,12 @@ var dirPath:String = ""
         
         categoryName = getCategoryName()
         testStatusDic = getTestCaseNameAndStatus()
-    
+        
         let file = "TestSummary.txt" //this is the file. we will write to and read from it
         
         let dir = NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.DocumentDirectory, NSSearchPathDomainMask.AllDomainsMask, true).first! //{
-        print(dir)
         
         let path = NSURL(fileURLWithPath: dir).URLByAppendingPathComponent(file)
-        print(path)
         dirPath = dir
         let filePath = NSHomeDirectory() + "/Documents/" + file
         
@@ -198,10 +222,9 @@ var dirPath:String = ""
             totalTestCase = 0
             
             print("Test category name is: \(categoryName[outerKey])")
+            
             do {
-                //try "Test category name is: \(categoryName[outerKey])".writeToURL(path, atomically: false, encoding: NSUTF8StringEncoding)
                 appendToFile("\nTest category name is: \(categoryName[outerKey])", filePath: filePath)
-                
             }
             catch {/* error handling here */}
             
@@ -222,33 +245,33 @@ var dirPath:String = ""
             }
             
             do {
-                //try "total passed: \(totalPass)".writeToURL(path, atomically: false, encoding: NSUTF8StringEncoding)
+                
                 appendToFile("\ntotal passed: \(totalPass)", filePath: filePath)
             }
             catch {/* error handling here */}
             
             do {
-                //try "total Failed: \(totalFail)".writeToURL(path, atomically: false, encoding: NSUTF8StringEncoding)
                 
                 appendToFile("\ntotal Failed: \(totalFail)", filePath: filePath)
             }
             catch {/* error handling here */}
             
             do {
-                //try "total Skipped: \(totalSkipped)".writeToURL(path, atomically: false, encoding: NSUTF8StringEncoding)
+                
                 appendToFile("\ntotal Skipped: \(totalSkipped)", filePath: filePath)
             }
             catch {/* error handling here */}
             
             do {
-                //try "total: \(totalPass+totalFail+totalSkipped)".writeToURL(path, atomically: false, encoding: NSUTF8StringEncoding)
+                
                 appendToFile("\ntotal: \(totalPass+totalFail+totalSkipped)", filePath: filePath)
                 
             }
             catch {/* error handling here */}
         }
+        
         return dirPath
-    }//func ends here
+    }
     
     
     //get plist data from documents directory
@@ -270,31 +293,6 @@ var dirPath:String = ""
         
     }//func ends here
     
-    class readFromTestSummary{
-
-    //convert dict data to array from plist
-    func convertArrayToDictFromPlist(keyName:String) {
-        
-        dictArray = [NSDictionary]()
-        
-        for (key, value) in myDict!{
-            
-            //print(key)
-            if(key.isEqual(keyName)){
-                
-                array = myDict![keyName] as? NSArray
-                
-                for i in 0..<array!.count{
-                    
-                    myDict = array![i] as! NSDictionary as NSDictionary!
-                    dictArray.append(myDict!)
-                }
-                //print(key)
-                break
-            }
-        }
-    }//func ends here
-    
     //search folder
     func searchFolder(folderPath:String, keyWord:String) ->String{
         
@@ -303,17 +301,18 @@ var dirPath:String = ""
         let enumerator:NSDirectoryEnumerator = fileManager.enumeratorAtPath(folderPath)!
         
         while let searchElement = enumerator.nextObject() as? String {
-        
+            
             if searchElement.hasPrefix(keyWord) {
-    
+                
                 element = searchElement
                 break
             }
             
             if searchElement.hasSuffix(keyWord) {
-            
+                
                 element = searchElement
                 break
+                
             }
         }
         return element

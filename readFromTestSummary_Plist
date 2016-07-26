@@ -1,0 +1,364 @@
+//: Playground - noun: a place where people can play
+
+import Cocoa
+
+
+var array:NSArray?
+var myDict: NSDictionary?
+var categoryName = [String]()
+var testcaseName = Array<Array<String>>()
+var testcaseStatus = Array<Array<String>>()
+var dictArray = [NSDictionary]()
+var key:String = "default"
+var dictionaries  = [String: String]()
+var dict = [Int:[String:String]]()
+
+var testStatusDic = [Int:[String:String]]()
+
+var totalPass:Int = 0
+var totalFail:Int = 0
+var totalSkipped:Int = 0
+var totalTestCase:Int = 0
+var dirPath:String = ""
+
+class readFromTestSummary{
+
+    //convert dict data to array from plist
+    func convertArrayToDictFromPlist(keyName:String) {
+        
+        dictArray = [NSDictionary]()
+        
+        for (key, value) in myDict!{
+            
+            //print(key)
+            if(key.isEqual(keyName)){
+                
+                array = myDict![keyName] as? NSArray
+                
+                for i in 0..<array!.count{
+                    
+                    myDict = array![i] as! NSDictionary as NSDictionary!
+                    dictArray.append(myDict!)
+                }
+                
+                //print(key)
+                break
+                
+            }
+            
+        }
+        
+    }//func ends here
+    
+    
+    //get category count from plist
+    func getCategoryCount() -> Int{
+        
+        myDict = self.getTestSummaryPlistData()
+        
+        for i in 0..<4 {
+            
+            var key:String = "default"
+            
+            if(i==0){
+                
+                key="TestableSummaries"
+            }
+            if(i==1){
+                
+                key="Tests"
+            }
+            if(i>1){
+                
+                key="Subtests"
+            }
+            
+            convertArrayToDictFromPlist(key)
+        }
+        
+        
+        print(array!.count)
+        return array!.count
+        
+    }//func ends here
+    
+    
+    
+    //get category name
+    func getCategoryName() -> Array<String>{
+        
+        myDict = self.getTestSummaryPlistData()
+        
+        for i in 0..<4{
+            
+            var key:String = "default"
+            
+            if(i==0){
+                
+                key="TestableSummaries"
+            }
+            if(i==1){
+                
+                key="Tests"
+            }
+            if(i>1){
+                
+                key="Subtests"
+            }
+            
+            convertArrayToDictFromPlist(key)
+            
+        }
+        
+        for i in 0..<dictArray.count{
+            
+            for (key, value) in dictArray[i]{
+                
+                if(key.isEqual("TestName")){
+                    
+                    categoryName.append(value as! String)
+                    print(value)
+                    
+                }
+                
+            }
+            
+        }
+        
+        // print(array!.count)
+        
+        return categoryName
+        
+    }//func ends here
+    
+    
+    //get test summary
+    func getTestCaseNameAndStatus() -> [Int:[String:String]]{
+        
+        myDict = self.getTestSummaryPlistData()
+        
+        for i in 0..<4 {
+            
+            if(i==0){
+                
+                key="TestableSummaries"
+            }
+            if(i==1){
+                
+                key="Tests"
+            }
+            if(i>1){
+                
+                key="Subtests"
+            }
+            
+            convertArrayToDictFromPlist(key)
+            
+        }
+        
+        print("******* \(dictArray.count)")
+        
+        for testCat in 0..<dictArray.count{
+            
+            dict.updateValue([:], forKey: testCat)
+            myDict = dictArray[testCat] as NSDictionary!
+            
+            for (key, _) in myDict!{
+                
+                print(key)
+                
+                if(key.isEqual("Subtests")){
+                    
+                    array = myDict!["Subtests"] as? NSArray
+                    
+                    for i in 0..<array!.count{
+                        
+                        myDict = array![i] as! NSDictionary
+                        
+                        for (key, value) in myDict!{
+                            
+                            
+                            if(key.isEqual("TestName")){
+                                
+                                
+                                dict[testCat]?.updateValue( myDict!["TestStatus"]! as! String,forKey: myDict!["TestName"]! as! String)
+                                
+                            }
+                            
+                        }
+                        
+                    }
+                    
+                    break
+                }
+                
+            }
+          
+        }
+        return dict
+    }//func ends here
+    
+    
+    //append to file
+    func appendToFile(text:String,filePath:String)  {
+        
+        //Check if file exists
+        let fileManager = NSFileManager.defaultManager()
+        if fileManager.fileExistsAtPath(filePath) {
+            
+            if let fileHandle = NSFileHandle(forWritingAtPath: filePath) {
+                //Append to file
+                fileHandle.seekToEndOfFile()
+                fileHandle.writeData(text.dataUsingEncoding(NSUTF8StringEncoding)!)
+            }
+        }
+            
+        else{
+            
+            print("file to append data does not exist.")
+        }
+        
+    }//func ends here
+    
+    
+    //write to file for email body
+    func writeSummaryToTextFile() -> String{
+        
+        categoryName = getCategoryName()
+        testStatusDic = getTestCaseNameAndStatus()
+        
+        
+        let file = "TestSummary.txt" //this is the file. we will write to and read from it
+        
+        let dir = NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.DocumentDirectory, NSSearchPathDomainMask.AllDomainsMask, true).first! //{
+        print(dir)
+        
+        let path = NSURL(fileURLWithPath: dir).URLByAppendingPathComponent(file)
+        print(path)
+        dirPath = dir
+        let filePath = NSHomeDirectory() + "/Documents/" + file
+        
+        //writing
+        do {
+            try "total test category is \(testStatusDic.count)".writeToURL(path, atomically: false, encoding: NSUTF8StringEncoding)
+        }
+        catch {/* error handling here */}
+        
+        
+        for (outerKey, innerDict) in testStatusDic {
+            
+            totalFail = 0
+            totalPass = 0
+            totalSkipped = 0
+            totalTestCase = 0
+            
+            print("Test category name is: \(categoryName[outerKey])")
+            do {
+                //try "Test category name is: \(categoryName[outerKey])".writeToURL(path, atomically: false, encoding: NSUTF8StringEncoding)
+                appendToFile("\nTest category name is: \(categoryName[outerKey])", filePath: filePath)
+                
+            }
+            catch {/* error handling here */}
+            
+            for (key, value) in innerDict {
+                //print("\tkey: \(key), value: \(value)")
+                if(value == "Success"){
+                    
+                    totalPass += 1
+                }
+                if(value == "Failure"){
+                    
+                    totalFail += 1
+                }
+                if(value == "Skipped"){
+                    
+                    totalSkipped += 1
+                }
+            }
+            
+            
+            do {
+                //try "total passed: \(totalPass)".writeToURL(path, atomically: false, encoding: NSUTF8StringEncoding)
+                appendToFile("\ntotal passed: \(totalPass)", filePath: filePath)
+            }
+            catch {/* error handling here */}
+            
+            
+            do {
+                //try "total Failed: \(totalFail)".writeToURL(path, atomically: false, encoding: NSUTF8StringEncoding)
+                
+                appendToFile("\ntotal Failed: \(totalFail)", filePath: filePath)
+            }
+            catch {/* error handling here */}
+            
+            
+            do {
+                //try "total Skipped: \(totalSkipped)".writeToURL(path, atomically: false, encoding: NSUTF8StringEncoding)
+                appendToFile("\ntotal Skipped: \(totalSkipped)", filePath: filePath)
+            }
+            catch {/* error handling here */}
+            
+            do {
+                //try "total: \(totalPass+totalFail+totalSkipped)".writeToURL(path, atomically: false, encoding: NSUTF8StringEncoding)
+                appendToFile("\ntotal: \(totalPass+totalFail+totalSkipped)", filePath: filePath)
+                
+            }
+            catch {/* error handling here */}
+        }
+        
+        return dirPath
+    }//func ends here
+    
+    
+    //get plist data from documents directory
+    func getTestSummaryPlistData() -> NSDictionary {
+        
+        var dictionary:NSDictionary!
+        
+        let documentsDirPath = NSSearchPathForDirectoriesInDomains(.DocumentDirectory, .UserDomainMask, true)[0]
+        let plistPath = self.searchFolder(documentsDirPath, keyWord: "TestSummaries.plist")
+        let data:NSData =  NSFileManager.defaultManager().contentsAtPath(documentsDirPath+"/"+plistPath)!
+        
+        do{
+            dictionary = try NSPropertyListSerialization.propertyListWithData(data, options: NSPropertyListMutabilityOptions.MutableContainersAndLeaves, format: nil) as! NSDictionary
+        }catch{
+            print("Error occured while reading from the Test Summary plist file")
+        }
+        
+        return dictionary
+        
+    }//func ends here
+    
+    //search folder
+    func searchFolder(folderPath:String, keyWord:String) ->String{
+        
+        var element:String = "default"
+        let fileManager = NSFileManager.defaultManager()
+        let enumerator:NSDirectoryEnumerator = fileManager.enumeratorAtPath(folderPath)!
+        
+        while let searchElement = enumerator.nextObject() as? String {
+            
+            
+            if searchElement.hasPrefix(keyWord) {
+                
+                
+                element = searchElement
+                break
+                
+            }
+            
+            if searchElement.hasSuffix(keyWord) {
+                
+                
+                element = searchElement
+                break
+                
+            }
+        }
+        
+        return element
+        
+    }//func ends here
+
+}
+

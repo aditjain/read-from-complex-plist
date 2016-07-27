@@ -195,7 +195,7 @@ class readFromTestSummary{
     
     
     //write to file for email body
-    func writeSummaryToTextFile() -> String{
+    func writeSummaryToTextFile(){
         
         categoryName = getCategoryName()
         testStatusDic = getTestCaseNameAndStatus()
@@ -205,7 +205,6 @@ class readFromTestSummary{
         let dir = NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.DocumentDirectory, NSSearchPathDomainMask.AllDomainsMask, true).first! //{
         
         let path = NSURL(fileURLWithPath: dir).URLByAppendingPathComponent(file)
-        dirPath = dir
         let filePath = NSHomeDirectory() + "/Documents/" + file
         
         //writing
@@ -269,8 +268,6 @@ class readFromTestSummary{
             }
             catch {/* error handling here */}
         }
-        
-        return dirPath
     }
     
     
@@ -320,3 +317,10 @@ class readFromTestSummary{
 
 }
 
+//now call the desired function you want
+
+let run = readFromTestSummary() //create an instance of the class
+
+run.writeSummaryToTextFile() //call the method 
+run.getCategoryName() //call the method 
+run.getCategoryCount() //call the method 

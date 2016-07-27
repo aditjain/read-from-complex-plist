@@ -12,4 +12,4 @@ This TestSummary.plist file is more complex.
 First, copy your TestSummary.plist file to Documents directory.
 Than use my functions to get the category wise test summary.
 
-Test summary will be stored in TestSummary.txt file in documents directory.
+    -If function writeSummaryToTextFile() is called, Test summary will be stored in TestSummary.txt file in documents directory.

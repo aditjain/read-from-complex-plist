@@ -20,6 +20,7 @@ var dirPath:String = ""
 
 class readFromTestSummary{
 
+    //helper function
     //convert dict data to array from plist
     func convertArrayToDictFromPlist(keyName:String) {
         
@@ -75,7 +76,7 @@ class readFromTestSummary{
     }//func ends here
     
     
-    //get category name
+    //get category name in an array
     func getCategoryName() -> Array<String>{
         
         plistDict = self.getTestSummaryPlistData()
@@ -115,7 +116,7 @@ class readFromTestSummary{
     }//func ends here
     
     
-    //get test summary
+    //get test summary and return the summary in a multidimensional dictionary.
     func getTestCaseNameAndStatus() -> [Int:[String:String]]{
         
         plistDict = self.getTestSummaryPlistData()
@@ -172,6 +173,7 @@ class readFromTestSummary{
         return dict
     }
     
+    //helper function
     //append to file
     func appendToFile(text:String,filePath:String)  {
         
@@ -194,7 +196,7 @@ class readFromTestSummary{
     }//func ends here
     
     
-    //write to file for email body
+    //write test summary to a file
     func writeSummaryToTextFile(){
         
         categoryName = getCategoryName()
@@ -270,7 +272,7 @@ class readFromTestSummary{
         }
     }
     
-    
+    //helper function
     //get plist data from documents directory
     func getTestSummaryPlistData() -> NSDictionary {
         
@@ -290,6 +292,7 @@ class readFromTestSummary{
         
     }//func ends here
     
+    //helper function
     //search folder
     func searchFolder(folderPath:String, keyWord:String) ->String{
         
@@ -320,7 +323,4 @@ class readFromTestSummary{
 //now call the desired function you want
 
 let run = readFromTestSummary() //create an instance of the class
-
 run.writeSummaryToTextFile() //call the method 
-run.getCategoryName() //call the method 
-run.getCategoryCount() //call the method 

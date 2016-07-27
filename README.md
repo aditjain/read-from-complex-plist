@@ -1,4 +1,4 @@
-# read-from-complex-plist
+# read-from-complex-plist using swift 2.2
 
 This is a sample demonstration about how to read test summary from
 
